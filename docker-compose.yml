@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./backend
+    container_name: fileapp-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://192.168.31.203:3306/fileapp?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: fileapp
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      FILE_STORAGE_PATH: /data/files
+      CLAUDE_JOB_DIR: /tmp/jobs
+      CLAUDE_TIMEOUT_SECONDS: "600"
+      TZ: Asia/Seoul
+    volumes:
+      - file-data:/data/files
+      - job-tmp:/tmp/jobs
+    expose:
+      - "8080"
+    networks: [app-net]
+
+  frontend:
+    build: ./frontend
+    container_name: fileapp-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks: [app-net]
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  file-data:
+  job-tmp:

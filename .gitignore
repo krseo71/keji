@@ -1,0 +1,13 @@
+.env
+db/.env
+db/mysql-data/
+backend/.gradle/
+backend/build/
+backend/out/
+backend/bin/
+frontend/node_modules/
+frontend/dist/
+.idea/
+.vscode/
+*.iml
+.DS_Store

@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: fileapp
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://192.168.31.203:3306/fileapp?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${SPRING_DATASOURCE_USERNAME:fileapp}
+    password: ${SPRING_DATASOURCE_PASSWORD:fileapp}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-change-me-change-me-change-me-change-me}
+    access-ttl-seconds: 3600
+    refresh-ttl-seconds: 1209600
+  storage:
+    path: ${FILE_STORAGE_PATH:/data/files}
+    allowed-extensions: hwp,hwpx,ppt,pptx,xlsx,xls,doc,docx,pdf,csv,md,txt,json
+  claude:
+    job-dir: ${CLAUDE_JOB_DIR:/tmp/jobs}
+    binary: ${CLAUDE_BINARY:claude}
+    timeout-seconds: ${CLAUDE_TIMEOUT_SECONDS:600}
+    api-key: ${ANTHROPIC_API_KEY:}
+    max-concurrent: 2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.hibernate.SQL: debug
