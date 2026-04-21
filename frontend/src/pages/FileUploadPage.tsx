@@ -23,12 +23,12 @@ export default function FileUploadPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow-sm">
+    <div className="max-w-md mx-auto bg-white dark:bg-slate-900 p-6 rounded border border-slate-200 dark:border-slate-800">
       <h1 className="text-xl font-bold mb-4">업로드</h1>
       <input type="file" onChange={onPick} className="mb-3" accept=".hwp,.hwpx,.ppt,.pptx,.xlsx,.xls,.doc,.docx,.pdf,.csv,.md,.txt,.json" />
-      {file && <div className="text-sm text-slate-600 mb-3">선택: {file.name} ({(file.size / 1024).toFixed(1)}KB)</div>}
-      {err && <div className="text-red-600 text-sm mb-3">{err}</div>}
-      <button disabled={!file || busy} onClick={onUpload} className="w-full bg-slate-800 text-white rounded py-2 disabled:opacity-40">
+      {file && <div className="text-sm text-slate-600 dark:text-slate-300 mb-3">선택: {file.name} ({(file.size / 1024).toFixed(1)}KB)</div>}
+      {err && <div className="text-red-600 dark:text-red-400 text-sm mb-3">{err}</div>}
+      <button disabled={!file || busy} onClick={onUpload} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded py-2 disabled:opacity-40">
         {busy ? '업로드 중…' : '업로드'}
       </button>
     </div>

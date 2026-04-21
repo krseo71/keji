@@ -39,13 +39,17 @@ public class AsyncJobRunner {
             service.prepareWorkDir(workDir, job);
 
             Set<Path> inputs = new HashSet<>();
+            String inputFileName = null;
             if (job.getInputFileId() != null) {
                 try (var stream = Files.list(workDir)) {
                     stream.filter(Files::isRegularFile).forEach(inputs::add);
                 }
+                if (!inputs.isEmpty()) {
+                    inputFileName = inputs.iterator().next().getFileName().toString();
+                }
             }
 
-            String prompt = buildPrompt(job.getPrompt());
+            String prompt = buildPrompt(job.getPrompt(), inputFileName);
             ClaudeRunner.Result result = claudeRunner.run(workDir, prompt);
 
             if (result.isTimedOut()) {
@@ -78,16 +82,22 @@ public class AsyncJobRunner {
         }
     }
 
-    private String buildPrompt(String userPrompt) {
-        return userPrompt + """
-
-
-                [작업 지시]
-                - 현재 작업 디렉토리에 결과 파일만 저장할 것.
-                - 허용 확장자: .xlsx .pptx .docx .hwp .hwpx .pdf .csv .md .txt .json
-                - 부가 설명은 표준 출력으로만 출력하고, 의미 없는 파일을 만들지 말 것.
-                - 입력 파일은 덮어쓰지 말 것.
-                """;
+    private String buildPrompt(String userPrompt, String inputFileName) {
+        StringBuilder sb = new StringBuilder();
+        if (inputFileName != null) {
+            sb.append("입력 파일: \"").append(inputFileName).append("\"\n");
+            sb.append("위 파일을 참조해 아래 요청을 수행해줘.\n\n");
+        }
+        sb.append("[요청]\n");
+        sb.append(userPrompt);
+        sb.append("\n\n[규칙]\n");
+        sb.append("- 현재 작업 디렉토리에만 결과 파일을 저장할 것.\n");
+        sb.append("- 허용 확장자: .xlsx .pptx .docx .hwp .hwpx .pdf .csv .md .txt .json\n");
+        sb.append("- 입력 파일은 덮어쓰지 말 것.\n");
+        sb.append("- 웹 검색/조회(WebFetch, WebSearch) 도구는 사용하지 말 것.\n");
+        sb.append("- 불필요한 탐색 없이 곧바로 결과 파일을 만들 것.\n");
+        sb.append("- 완료 후 한 줄 요약만 출력할 것.\n");
+        return sb.toString();
     }
 
     private List<Path> collectOutputs(Path work, Set<Path> exclude) throws IOException {

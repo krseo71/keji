@@ -20,4 +20,15 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "chatExecutor")
+    public Executor chatExecutor(@Value("${app.chat.max-concurrent:4}") int maxConcurrent) {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(maxConcurrent);
+        executor.setMaxPoolSize(maxConcurrent);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("chat-");
+        executor.initialize();
+        return executor;
+    }
 }

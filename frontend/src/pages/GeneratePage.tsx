@@ -48,18 +48,18 @@ export default function GeneratePage() {
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      <form onSubmit={submit} className="bg-white rounded shadow-sm p-5 space-y-3">
+      <form onSubmit={submit} className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 p-5 space-y-3">
         <h1 className="text-xl font-bold">Claude로 문서 만들기</h1>
         <textarea
-          className="w-full border rounded p-3 h-48"
+          className="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded p-3 h-48"
           placeholder={'예) 2024년 분기별 매출 샘플 xlsx로 만들어줘.\n또는: 이 파일을 요약해서 pptx로 만들어줘.'}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           required
         />
         <label className="block text-sm">
-          <span className="text-slate-600">입력 파일 (선택)</span>
-          <select className="w-full border rounded px-2 py-1 mt-1" value={inputFileId}
+          <span className="text-slate-600 dark:text-slate-300">입력 파일 (선택)</span>
+          <select className="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded px-2 py-1 mt-1" value={inputFileId}
                   onChange={(e) => setInputFileId(e.target.value === '' ? '' : Number(e.target.value))}>
             <option value="">없음</option>
             {inputs.map((f) => (
@@ -67,28 +67,28 @@ export default function GeneratePage() {
             ))}
           </select>
         </label>
-        {err && <div className="text-red-600 text-sm">{err}</div>}
+        {err && <div className="text-red-600 dark:text-red-400 text-sm">{err}</div>}
         <button disabled={busy || !prompt.trim()} className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-40">
           {busy ? '요청 중…' : '생성 시작'}
         </button>
       </form>
 
-      <div className="bg-white rounded shadow-sm p-5">
+      <div className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 p-5">
         <h2 className="text-lg font-bold">작업 상태</h2>
-        {!job && <div className="text-slate-400 mt-4">아직 제출된 작업이 없습니다.</div>}
+        {!job && <div className="text-slate-400 dark:text-slate-500 mt-4">아직 제출된 작업이 없습니다.</div>}
         {job && (
           <div className="mt-3 space-y-2 text-sm">
             <div>ID: #{job.id}</div>
             <div>상태: <StatusBadge status={job.status} /></div>
-            {job.errorMessage && <div className="text-red-600 whitespace-pre-wrap">{job.errorMessage}</div>}
+            {job.errorMessage && <div className="text-red-600 dark:text-red-400 whitespace-pre-wrap">{job.errorMessage}</div>}
             {job.outputs.length > 0 && (
               <div>
                 <div className="font-semibold mt-3">생성된 파일</div>
                 <ul className="list-disc ml-5">
                   {job.outputs.map((o) => (
                     <li key={o.id}>
-                      <Link to={`/files/${o.id}`} className="text-slate-800 hover:underline">{o.originalName}</Link>
-                      <a href={filesApi.downloadUrl(o.id)} className="ml-2 text-slate-500">[다운로드]</a>
+                      <Link to={`/files/${o.id}`} className="text-slate-800 dark:text-slate-100 hover:underline">{o.originalName}</Link>
+                      <button onClick={() => filesApi.download(o.id, o.originalName)} className="ml-2 text-slate-500 dark:text-slate-400 underline">[다운로드]</button>
                     </li>
                   ))}
                 </ul>
@@ -103,10 +103,10 @@ export default function GeneratePage() {
 
 function StatusBadge({ status }: { status: JobResponse['status'] }) {
   const color = {
-    PENDING: 'bg-slate-200 text-slate-700',
-    RUNNING: 'bg-amber-100 text-amber-700',
-    SUCCEEDED: 'bg-green-100 text-green-700',
-    FAILED: 'bg-red-100 text-red-700'
+    PENDING: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+    RUNNING: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    SUCCEEDED: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+    FAILED: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
   }[status];
   return <span className={`inline-block text-xs px-2 py-0.5 rounded ${color}`}>{status}</span>;
 }

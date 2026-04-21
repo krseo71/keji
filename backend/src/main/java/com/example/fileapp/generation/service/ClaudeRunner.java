@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +30,15 @@ public class ClaudeRunner {
     @Value("${app.claude.api-key:}")
     private String apiKey;
 
+    @Value("${app.claude.model:}")
+    private String model;
+
+    @Value("${app.claude.max-turns:0}")
+    private int maxTurns;
+
+    @Value("${app.claude.allowed-tools:}")
+    private String allowedTools;
+
     @Getter
     public static class Result {
         public final int exitCode;
@@ -44,12 +55,22 @@ public class ClaudeRunner {
     }
 
     public Result run(Path workDir, String finalPrompt) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(
-                binary,
-                "-p", finalPrompt,
-                "--permission-mode", "acceptEdits",
-                "--output-format", "json"
-        );
+        List<String> cmd = new ArrayList<>();
+        cmd.add(binary);
+        cmd.add("-p"); cmd.add(finalPrompt);
+        cmd.add("--permission-mode"); cmd.add("acceptEdits");
+        cmd.add("--output-format"); cmd.add("json");
+        if (model != null && !model.isBlank()) {
+            cmd.add("--model"); cmd.add(model);
+        }
+        if (maxTurns > 0) {
+            cmd.add("--max-turns"); cmd.add(Integer.toString(maxTurns));
+        }
+        if (allowedTools != null && !allowedTools.isBlank()) {
+            cmd.add("--allowed-tools"); cmd.add(allowedTools);
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(workDir.toFile());
         Map<String, String> env = pb.environment();
         if (apiKey != null && !apiKey.isBlank()) {
@@ -57,7 +78,9 @@ public class ClaudeRunner {
         }
         pb.redirectErrorStream(false);
 
-        log.info("Running claude in {} (timeout {}s)", workDir, timeoutSeconds);
+        log.info("Running claude in {} (timeout {}s, model='{}', maxTurns={}, allowedTools='{}')",
+                workDir, timeoutSeconds, model, maxTurns, allowedTools);
+        long startMs = System.currentTimeMillis();
         Process proc = pb.start();
 
         StringBuilder out = new StringBuilder();
@@ -73,10 +96,13 @@ public class ClaudeRunner {
             }
             outReader.join(2000);
             errReader.join(2000);
+            log.warn("claude timed out after {}ms in {}", System.currentTimeMillis() - startMs, workDir);
             return new Result(-1, out.toString(), err.toString(), true);
         }
         outReader.join();
         errReader.join();
+        long elapsed = System.currentTimeMillis() - startMs;
+        log.info("claude finished in {}ms exit={}", elapsed, proc.exitValue());
         return new Result(proc.exitValue(), out.toString(), err.toString(), false);
     }
 

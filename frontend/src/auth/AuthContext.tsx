@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import type { TokenResponse } from '../api/auth';
 
+// sessionStorage 사용 — 브라우저(탭) 종료 시 자격이 자동으로 소멸.
+// 새로고침에서는 탭이 유지되므로 세션이 남아있어야 함.
 interface AuthState {
   username: string | null;
   role: string | null;
@@ -11,27 +13,24 @@ interface AuthState {
 const Ctx = createContext<AuthState | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [username, setUsername] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUsername(localStorage.getItem('username'));
-    setRole(localStorage.getItem('role'));
-  }, []);
+  // 초기 state 를 sessionStorage 에서 lazy-init 으로 읽어 첫 렌더부터 올바른 값이 보이게.
+  // 그렇지 않으면 ProtectedRoute 가 초기 null 을 보고 /login 으로 리다이렉트해 버림.
+  const [username, setUsername] = useState<string | null>(() => sessionStorage.getItem('username'));
+  const [role, setRole] = useState<string | null>(() => sessionStorage.getItem('role'));
 
   const login = (t: TokenResponse) => {
-    localStorage.setItem('accessToken', t.accessToken);
-    localStorage.setItem('refreshToken', t.refreshToken);
-    localStorage.setItem('username', t.username);
-    localStorage.setItem('role', t.role);
+    sessionStorage.setItem('accessToken', t.accessToken);
+    sessionStorage.setItem('refreshToken', t.refreshToken);
+    sessionStorage.setItem('username', t.username);
+    sessionStorage.setItem('role', t.role);
     setUsername(t.username);
     setRole(t.role);
   };
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
-    localStorage.removeItem('role');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('role');
     setUsername(null);
     setRole(null);
   };

@@ -5,6 +5,7 @@ import com.example.fileapp.file.dto.FileDtos.FileResponse;
 import com.example.fileapp.generation.domain.GenerationJob;
 import com.example.fileapp.generation.dto.GenerationDtos.GenerateRequest;
 import com.example.fileapp.generation.dto.GenerationDtos.JobResponse;
+import com.example.fileapp.generation.service.AsyncJobRunner;
 import com.example.fileapp.generation.service.GenerationService;
 import com.example.fileapp.security.AppUserPrincipal;
 import jakarta.validation.Valid;
@@ -21,11 +22,13 @@ import java.util.List;
 public class GenerationController {
 
     private final GenerationService service;
+    private final AsyncJobRunner runner;
 
     @PostMapping
     public ResponseEntity<JobResponse> submit(@AuthenticationPrincipal AppUserPrincipal user,
                                               @Valid @RequestBody GenerateRequest req) {
-        GenerationJob job = service.submit(user, req);
+        GenerationJob job = service.submit(user, req);   // tx commits on return
+        runner.enqueue(job.getId());                     // async fired after commit
         return ResponseEntity.accepted().body(JobResponse.of(job, List.of()));
     }
 

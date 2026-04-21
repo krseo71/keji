@@ -8,7 +8,7 @@ services:
       SPRING_DATASOURCE_USERNAME: fileapp
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       FILE_STORAGE_PATH: /data/files
       CLAUDE_JOB_DIR: /tmp/jobs
       CLAUDE_TIMEOUT_SECONDS: "600"
@@ -16,6 +16,11 @@ services:
     volumes:
       - file-data:/data/files
       - job-tmp:/tmp/jobs
+      - chat-ws:/data/chat
+      # 호스트의 Claude Code 구독 자격을 그대로 재사용.
+      # UID 1000 이 컨테이너 내부 fileapp 사용자로 매핑되어 파일 소유권이 맞음.
+      - /home/krseo/.claude:/home/fileapp/.claude
+      - /home/krseo/.claude.json:/home/fileapp/.claude.json
     expose:
       - "8080"
     networks: [app-net]
@@ -37,3 +42,4 @@ networks:
 volumes:
   file-data:
   job-tmp:
+  chat-ws:

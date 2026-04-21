@@ -33,7 +33,6 @@ public class GenerationService {
     private final StoredFileRepository fileRepository;
     private final FileService fileService;
     private final FileStorageService storage;
-    private final AsyncJobRunner runner;
 
     @Transactional
     public GenerationJob submit(AppUserPrincipal user, GenerateRequest req) {
@@ -50,9 +49,7 @@ public class GenerationService {
                 .inputFileId(req.inputFileId())
                 .status(JobStatus.PENDING)
                 .build();
-        jobRepository.save(job);
-        runner.enqueue(job.getId());
-        return job;
+        return jobRepository.save(job);
     }
 
     @Transactional

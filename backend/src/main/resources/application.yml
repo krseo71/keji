@@ -38,6 +38,12 @@ app:
     timeout-seconds: ${CLAUDE_TIMEOUT_SECONDS:600}
     api-key: ${ANTHROPIC_API_KEY:}
     max-concurrent: 2
+    model: ${CLAUDE_MODEL:}
+    max-turns: ${CLAUDE_MAX_TURNS:20}
+    allowed-tools: ${CLAUDE_ALLOWED_TOOLS:Read,Write,Edit,Bash,Glob,Grep}
+  chat:
+    workspace-root: ${CHAT_WORKSPACE_ROOT:/data/chat}
+    max-concurrent: ${CHAT_MAX_CONCURRENT:4}
 
 management:
   endpoints:

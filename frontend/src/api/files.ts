@@ -31,5 +31,15 @@ export const filesApi = {
     return http.post<FileResponse>('/files', fd, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data);
   },
   remove: (id: number) => http.delete(`/files/${id}`),
-  downloadUrl: (id: number) => `/api/files/${id}/download`
+  async download(id: number, filename: string) {
+    const res = await http.get(`/files/${id}/download`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data as Blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || `file-${id}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 };

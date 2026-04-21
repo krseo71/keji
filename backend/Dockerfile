@@ -22,9 +22,13 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /src/build/libs/*.jar app.jar
 
-RUN mkdir -p /data/files /tmp/jobs && useradd -r -u 1001 -m fileapp \
-    && chown -R fileapp:fileapp /app /data/files /tmp/jobs
+RUN mkdir -p /data/files /data/chat /tmp/jobs \
+    && (getent passwd 1000 && userdel -r -f "$(getent passwd 1000 | cut -d: -f1)" || true) \
+    && (getent group 1000 && groupdel "$(getent group 1000 | cut -d: -f1)" || true) \
+    && useradd -u 1000 -m -d /home/fileapp fileapp \
+    && chown -R fileapp:fileapp /app /data/files /data/chat /tmp/jobs /home/fileapp
 USER fileapp
+ENV HOME=/home/fileapp
 
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/tini", "--", "java", "-jar", "/app/app.jar"]
